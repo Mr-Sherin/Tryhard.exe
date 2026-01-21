@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing | Patient Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Patient Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Patient</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="patient-dashboard.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="patient-appointments.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="patient-records.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📋</span>
+                    <span>Medical Records</span>
+                </a>
+                <a href="patient-billing.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <span>Billing</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="flex justify-between items-center" style="margin-bottom: 2rem;">
+                <div>
+                    <h1>Billing & Payments</h1>
+                    <p style="color: var(--text-secondary); margin: 0;">View your bills and payment history</p>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="grid grid-cols-3" style="margin-bottom: 2rem;">
+                <div class="card">
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Amount
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary);" id="totalAmount">$0
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Amount Paid
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--success);" id="amountPaid">$0</div>
+                </div>
+                <div class="card">
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Outstanding
+                        Balance</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--warning);" id="outstandingBalance">$0
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bills List -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">My Bills</h3>
+                </div>
+                <div id="billsList">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Make Payment</h3>
+                <button class="modal-close" onclick="ModalManager.hide('paymentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="billDetails"
+                    style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                </div>
+
+                <form id="paymentForm">
+                    <input type="hidden" id="billId">
+                    <div class="form-group">
+                        <label class="form-label">Payment Amount *</label>
+                        <input type="number" id="paymentAmount" class="form-input" placeholder="Enter amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Method *</label>
+                        <select id="paymentMethod" class="form-select" required>
+                            <option value="">Select payment method</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Card Number (if applicable)</label>
+                        <input type="text" id="cardNumber" class="form-input" placeholder="XXXX XXXX XXXX XXXX">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('paymentModal')">Cancel</button>
+                <button class="btn btn-success" onclick="processPayment()">Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth('patient');
+        initCommonElements();
+
+        const currentUser = auth.getUser();
+        let myBills = mockData.billing.filter(bill => bill.patientId === currentUser.id);
+
+        function calculateSummary() {
+            const totalAmount = myBills.reduce((sum, bill) => sum + bill.amount, 0);
+            const amountPaid = myBills.reduce((sum, bill) => sum + bill.paid, 0);
+            const outstanding = totalAmount - amountPaid;
+
+            document.getElementById('totalAmount').textContent = utils.formatCurrency(totalAmount);
+            document.getElementById('amountPaid').textContent = utils.formatCurrency(amountPaid);
+            document.getElementById('outstandingBalance').textContent = utils.formatCurrency(outstanding);
+        }
+
+        function renderBills() {
+            if (myBills.length > 0) {
+                document.getElementById('billsList').innerHTML = myBills.map(bill => {
+                    const balance = bill.amount - bill.paid;
+                    const percentage = (bill.paid / bill.amount) * 100;
+
+                    return `
+            <div style="border-bottom: 1px solid var(--border); padding: 1.5rem;">
+              <div class="flex justify-between items-start" style="margin-bottom: 1rem;">
+                <div>
+                  <h4 style="margin: 0 0 0.5rem 0;">Invoice #${bill.id.toUpperCase()}</h4>
+                  <div style="color: var(--text-secondary); font-size: 0.875rem;">${bill.service}</div>
+                </div>
+                <span class="badge ${utils.getStatusBadgeClass(bill.status)}">${bill.status}</span>
+              </div>
+
+              <div class="grid grid-cols-3" style="gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Date</div>
+                  <div style="font-weight: 600;">${utils.formatDate(bill.date)}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Total Amount</div>
+                  <div style="font-weight: 600;">${utils.formatCurrency(bill.amount)}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Balance</div>
+                  <div style="font-weight: 600; color: ${balance > 0 ? 'var(--warning)' : 'var(--success)'};">
+                    ${utils.formatCurrency(balance)}
+                  </div>
+                </div>
+              </div>
+
+              ${bill.paid > 0 ? `
+                <div style="margin-bottom: 1rem;">
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Payment Progress: ${Math.round(percentage)}%
+                  </div>
+                  <div style="background: var(--gray-200); height: 8px; border-radius: var(--radius-full); overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, var(--success) 0%, var(--secondary-green) 100%); height: 100%; width: ${percentage}%; transition: width 0.3s ease;"></div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <div class="flex gap-sm">
+                ${balance > 0 ?
+                            `<button class="btn btn-sm btn-success" onclick="showPaymentModal('${bill.id}')">
+                    💳 Make Payment
+                  </button>` : ''
+                        }
+                <button class="btn btn-sm btn-secondary" onclick="downloadInvoice('${bill.id}')">
+                  📄 Download Invoice
+                </button>
+              </div>
+            </div>
+          `;
+                }).join('');
+            } else {
+                document.getElementById('billsList').innerHTML = `
+          <div style="text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+            <h3>No Bills Found</h3>
+            <p style="color: var(--text-secondary);">Your billing information will appear here</p>
+          </div>
+        `;
+            }
+        }
+
+        function showPaymentModal(billId) {
+            const bill = myBills.find(b => b.id === billId);
+            if (bill) {
+                const balance = bill.amount - bill.paid;
+
+                document.getElementById('billId').value = bill.id;
+                document.getElementById('billDetails').innerHTML = `
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Invoice:</strong> #${bill.id.toUpperCase()}
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Service:</strong> ${bill.service}
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Total Amount:</strong> ${utils.formatCurrency(bill.amount)}
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Already Paid:</strong> ${utils.formatCurrency(bill.paid)}
+          </div>
+          <div style="font-size: 1.125rem; font-weight: 700; color: var(--primary-blue); margin-top: 1rem;">
+            <strong>Balance Due:</strong> ${utils.formatCurrency(balance)}
+          </div>
+        `;
+
+                document.getElementById('paymentAmount').value = balance;
+                ModalManager.show('paymentModal');
+            }
+        }
+
+        function processPayment() {
+            const form = document.getElementById('paymentForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const billId = document.getElementById('billId').value;
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            const bill = myBills.find(b => b.id === billId);
+            if (bill) {
+                bill.paid += paymentAmount;
+                bill.paymentMethod = paymentMethod;
+
+                if (bill.paid >= bill.amount) {
+                    bill.status = 'paid';
+                } else if (bill.paid > 0) {
+                    bill.status = 'partial';
+                }
+
+                calculateSummary();
+                renderBills();
+
+                NotificationManager.show(`Payment of ${utils.formatCurrency(paymentAmount)} processed successfully!`, 'success');
+                ModalManager.hide('paymentModal');
+                form.reset();
+            }
+        }
+
+        function downloadInvoice(billId) {
+            NotificationManager.show('Invoice downloaded successfully!', 'success');
+        }
+
+        // Initial render
+        calculateSummary();
+        renderBills();
+    </script>
+</body>
+
+</html>

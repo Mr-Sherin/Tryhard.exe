@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | MedFlowX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(135deg, rgba(14, 165, 233, 0.7) 0%, rgba(6, 182, 212, 0.6) 50%, rgba(139, 92, 246, 0.7) 100%),
+        url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(14, 165, 233, 0.2);
+      padding: 3rem;
+      max-width: 450px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-logo {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .role-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .role-option {
+      padding: 1rem 0.5rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .role-option:hover {
+      border-color: var(--primary-blue);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+    }
+
+    .role-option.active {
+      border-color: var(--primary-blue);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+      color: var(--primary-blue);
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .role-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .role-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .demo-credentials {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      border: 1px solid rgba(14, 165, 233, 0.1);
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    .demo-credentials strong {
+      color: var(--primary-blue);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="images/logo.png" alt="MedFlowX" style="height: 80px; width: auto;">
+        <h1 style="margin-bottom: 0.5rem;">MedFlowX</h1>
+        <p style="color: var(--text-secondary); margin: 0;">Sign in to your account</p>
+      </div>
+
+      <form id="loginForm">
+        <div style="margin-bottom: 1.5rem;">
+          <label class="form-label">Select Role</label>
+          <div class="role-selector">
+            <div class="role-option active" data-role="admin">
+              <div class="role-icon">👨‍💼</div>
+              <div class="role-label">Admin</div>
+            </div>
+            <div class="role-option" data-role="doctor">
+              <div class="role-icon">👨‍⚕️</div>
+              <div class="role-label">Doctor</div>
+            </div>
+            <div class="role-option" data-role="patient">
+              <div class="role-icon">🧑</div>
+              <div class="role-label">Patient</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" class="form-input" placeholder="Enter username" value="admin" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="Enter password" value="admin123"
+            required>
+        </div>
+
+        <div id="errorMessage" class="alert alert-error hidden" style="margin-bottom: 1rem;">
+          Invalid credentials. Please try again.
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full">
+          Sign In
+        </button>
+
+        <div class="demo-credentials">
+          <strong>Demo Credentials:</strong><br>
+          <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
+            <span>👨‍💼 Admin: admin / admin123</span>
+            <span>👨‍⚕️ Doctor: doctor / doctor123</span>
+            <span>🧑 Patient: patient / patient123</span>
+          </div>
+        </div>
+      </form>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="index.html" style="color: var(--text-secondary); font-size: 0.875rem;">
+          ← Back to Home
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    let selectedRole = 'admin';
+
+    // Role selection
+    const roleOptions = document.querySelectorAll('.role-option');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    roleOptions.forEach(option => {
+      option.addEventListener('click', function () {
+        roleOptions.forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        selectedRole = this.dataset.role;
+
+        // Auto-fill credentials for demo
+        usernameInput.value = selectedRole;
+        passwordInput.value = selectedRole + '123';
+      });
+    });
+
+    // Login form submission
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+      const errorMessage = document.getElementById('errorMessage');
+
+      const result = auth.login(username, password);
+
+      if (result.success) {
+        // Redirect based on role
+        const dashboardUrls = {
+          'admin': 'admin-dashboard.html',
+          'doctor': 'doctor-dashboard.html',
+          'patient': 'patient-dashboard.html'
+        };
+
+        window.location.href = dashboardUrls[result.user.role];
+      } else {
+        errorMessage.classList.remove('hidden');
+        setTimeout(() => {
+          errorMessage.classList.add('hidden');
+        }, 3000);
+      }
+    });
+  </script>
+</body>
+
+</html>

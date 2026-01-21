@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing & Payments | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Admin Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Admin</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-doctors.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">👨‍⚕️</span>
+                    <span>Doctors</span>
+                </a>
+                <a href="admin-departments.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">🏢</span>
+                    <span>Departments</span>
+                </a>
+                <a href="admin-billing.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <span>Billing</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <!-- Header Banner -->
+            <div class="card"
+                style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; margin-bottom: 2rem; position: relative; overflow: hidden;">
+                <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1400"
+                    alt="Billing"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.15;">
+                <div
+                    style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="color: white; margin-bottom: 0.5rem;">Billing & Payments</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0;">Track payments, invoices, and financial
+                            reports
+                        </p>
+                    </div>
+                    <button class="btn btn-lg" style="background: white; color: var(--secondary-green);"
+                        onclick="generateReport()">
+                        📄 Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Financial Stats -->
+            <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
+                <div class="card">
+                    <h4 style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Revenue
+                    </h4>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--success);" id="totalRevenue">$0</div>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Pending
+                        Payments</h4>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--warning);" id="pendingPayments">$0</div>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Paid Today
+                    </h4>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--primary-blue);" id="paidToday">$0</div>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Invoices
+                    </h4>
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--text-primary);" id="totalInvoices">0
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="grid grid-cols-3">
+                    <div>
+                        <label class="form-label">Search</label>
+                        <input type="text" id="searchInput" class="form-input" placeholder="Search by patient name..."
+                            oninput="filterBilling()">
+                    </div>
+                    <div>
+                        <label class="form-label">Payment Status</label>
+                        <select id="statusFilter" class="form-select" onchange="filterBilling()">
+                            <option value="all">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="partial">Partial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Date Range</label>
+                        <select id="dateFilter" class="form-select" onchange="filterBilling()">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Payment Records</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Invoice ID</th>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Service</th>
+                                <th>Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billingTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="modal-close" onclick="ModalManager.hide('paymentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <input type="hidden" id="billId">
+                    <div class="form-group">
+                        <label class="form-label">Patient</label>
+                        <input type="text" id="patientName" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total Amount</label>
+                        <input type="text" id="totalAmount" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Already Paid</label>
+                        <input type="text" id="alreadyPaid" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Remaining Balance</label>
+                        <input type="text" id="remainingBalance" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Amount *</label>
+                        <input type="number" id="paymentAmount" class="form-input" placeholder="Enter amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Method *</label>
+                        <select id="paymentMethod" class="form-select" required>
+                            <option value="">Select method</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('paymentModal')">Cancel</button>
+                <button class="btn btn-success" onclick="handlePayment()">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth('admin');
+        initCommonElements();
+
+        let billing = [...mockData.billing];
+        let filteredBilling = [...billing];
+
+        function calculateStats() {
+            const totalRevenue = billing.reduce((sum, bill) => sum + bill.paid, 0);
+            const pendingPayments = billing.reduce((sum, bill) => sum + (bill.amount - bill.paid), 0);
+            const paidToday = billing
+                .filter(bill => bill.date === '2026-01-21')
+                .reduce((sum, bill) => sum + bill.paid, 0);
+
+            document.getElementById('totalRevenue').textContent = utils.formatCurrency(totalRevenue);
+            document.getElementById('pendingPayments').textContent = utils.formatCurrency(pendingPayments);
+            document.getElementById('paidToday').textContent = utils.formatCurrency(paidToday);
+            document.getElementById('totalInvoices').textContent = billing.length;
+        }
+
+        function renderBilling() {
+            const tbody = document.getElementById('billingTable');
+            tbody.innerHTML = filteredBilling.map(bill => {
+                const balance = bill.amount - bill.paid;
+                return `
+          <tr>
+            <td><strong>${bill.id.toUpperCase()}</strong></td>
+            <td>${bill.patientName}</td>
+            <td>${utils.formatDate(bill.date)}</td>
+            <td>${bill.service}</td>
+            <td>${utils.formatCurrency(bill.amount)}</td>
+            <td>${utils.formatCurrency(bill.paid)}</td>
+            <td>${utils.formatCurrency(balance)}</td>
+            <td><span class="badge ${utils.getStatusBadgeClass(bill.status)}">${bill.status}</span></td>
+            <td>
+              ${bill.status !== 'paid' ?
+                        `<button class="btn btn-sm btn-success" onclick="showPaymentModal('${bill.id}')">Pay</button>` :
+                        `<button class="btn btn-sm btn-secondary" onclick="viewInvoice('${bill.id}')">View</button>`
+                    }
+            </td>
+          </tr>
+        `;
+            }).join('');
+        }
+
+        function filterBilling() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            filteredBilling = billing.filter(bill => {
+                const matchesSearch = bill.patientName.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || bill.status === statusFilter;
+                // Simplified date filter for demo
+                const matchesDate = dateFilter === 'all' || true;
+
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+
+            renderBilling();
+        }
+
+        function showPaymentModal(id) {
+            const bill = billing.find(b => b.id === id);
+            if (bill) {
+                document.getElementById('billId').value = bill.id;
+                document.getElementById('patientName').value = bill.patientName;
+                document.getElementById('totalAmount').value = utils.formatCurrency(bill.amount);
+                document.getElementById('alreadyPaid').value = utils.formatCurrency(bill.paid);
+                document.getElementById('remainingBalance').value = utils.formatCurrency(bill.amount - bill.paid);
+                document.getElementById('paymentAmount').value = bill.amount - bill.paid;
+                ModalManager.show('paymentModal');
+            }
+        }
+
+        function handlePayment() {
+            const billId = document.getElementById('billId').value;
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            const bill = billing.find(b => b.id === billId);
+            if (bill) {
+                bill.paid += paymentAmount;
+                bill.paymentMethod = paymentMethod;
+
+                if (bill.paid >= bill.amount) {
+                    bill.status = 'paid';
+                } else if (bill.paid > 0) {
+                    bill.status = 'partial';
+                }
+
+                calculateStats();
+                filterBilling();
+
+                NotificationManager.show('Payment recorded successfully!', 'success');
+                ModalManager.hide('paymentModal');
+                document.getElementById('paymentForm').reset();
+            }
+        }
+
+        function viewInvoice(id) {
+            NotificationManager.show('Invoice downloaded', 'success');
+        }
+
+        function generateReport() {
+            NotificationManager.show('Financial report generated successfully!', 'success');
+        }
+
+        // Initial render
+        calculateStats();
+        renderBilling();
+    </script>
+</body>
+
+</html>

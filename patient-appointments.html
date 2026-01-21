@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments | Patient Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Patient Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Patient</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="patient-dashboard.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="patient-appointments.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="patient-records.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📋</span>
+                    <span>Medical Records</span>
+                </a>
+                <a href="patient-billing.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <span>Billing</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="flex justify-between items-center" style="margin-bottom: 2rem;">
+                <div>
+                    <h1>My Appointments</h1>
+                    <p style="color: var(--text-secondary); margin: 0;">Book and manage your appointments</p>
+                </div>
+                <button class="btn btn-primary" onclick="ModalManager.show('bookAppointmentModal')">
+                    <span>➕</span> Book Appointment
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div style="margin-bottom: 2rem; border-bottom: 2px solid var(--border);">
+                <div class="flex gap-md">
+                    <button id="upcomingTab" class="nav-link active"
+                        style="border-bottom: 3px solid var(--primary-blue); margin-bottom: -2px;"
+                        onclick="switchTab('upcoming')">
+                        Upcoming
+                    </button>
+                    <button id="pastTab" class="nav-link" onclick="switchTab('past')">
+                        Past
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div id="upcomingAppointments" class="grid grid-cols-2">
+            </div>
+
+            <!-- Past Appointments -->
+            <div id="pastAppointments" class="grid grid-cols-2 hidden">
+            </div>
+        </main>
+    </div>
+
+    <!-- Book Appointment Modal -->
+    <div id="bookAppointmentModal" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Book New Appointment</h3>
+                <button class="modal-close" onclick="ModalManager.hide('bookAppointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label class="form-label">Department *</label>
+                        <select id="department" class="form-select" onchange="loadDoctors()" required>
+                            <option value="">Select department</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Emergency">Emergency</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Doctor *</label>
+                        <select id="doctor" class="form-select" required>
+                            <option value="">Select doctor</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label class="form-label">Appointment Date *</label>
+                            <input type="date" id="appointmentDate" class="form-input" required min="">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Preferred Time *</label>
+                            <select id="appointmentTime" class="form-select" required>
+                                <option value="">Select time</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Appointment Type *</label>
+                        <select id="appointmentType" class="form-select" required>
+                            <option value="regular">Regular Checkup</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason for Visit *</label>
+                        <textarea id="reason" class="form-textarea"
+                            placeholder="Describe your symptoms or reason for visit" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('bookAppointmentModal')">Cancel</button>
+                <button class="btn btn-success" onclick="bookAppointment()">Book Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth('patient');
+        initCommonElements();
+
+        const currentUser = auth.getUser();
+        let myAppointments = mockData.appointments.filter(apt => apt.patientId === currentUser.id);
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('appointmentDate').min = today;
+
+        function renderAppointments() {
+            const upcoming = myAppointments.filter(apt => apt.status === 'scheduled');
+            const past = myAppointments.filter(apt => apt.status !== 'scheduled');
+
+            // Render upcoming
+            if (upcoming.length > 0) {
+                document.getElementById('upcomingAppointments').innerHTML = upcoming.map(apt => `
+          <div class="card">
+            <div class="flex justify-between items-start" style="margin-bottom: 1rem;">
+              <div>
+                <h4 style="margin: 0 0 0.5rem 0;">${apt.doctorName}</h4>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">${apt.department}</div>
+              </div>
+              <span class="badge ${utils.getStatusBadgeClass(apt.type)}">${apt.type}</span>
+            </div>
+            
+            <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+              <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                📅 <strong>Date:</strong> ${utils.formatDate(apt.date)}
+              </div>
+              <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                🕐 <strong>Time:</strong> ${apt.time}
+              </div>
+              <div style="font-size: 0.875rem;">
+                📝 <strong>Reason:</strong> ${apt.reason}
+              </div>
+            </div>
+
+            <div class="flex gap-sm">
+              <button class="btn btn-sm btn-secondary" onclick="NotificationManager.show('Reminder sent to your email!', 'success')">
+                Set Reminder
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="cancelAppointment('${apt.id}')">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `).join('');
+            } else {
+                document.getElementById('upcomingAppointments').innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+            <h3>No Upcoming Appointments</h3>
+            <p style="color: var(--text-secondary);">Book an appointment to get started</p>
+            <button class="btn btn-primary" onclick="ModalManager.show('bookAppointmentModal')" style="margin-top: 1rem;">
+              Book Appointment
+            </button>
+          </div>
+        `;
+            }
+
+            // Render past
+            if (past.length > 0) {
+                document.getElementById('pastAppointments').innerHTML = past.map(apt => `
+          <div class="card">
+            <div class="flex justify-between items-start" style="margin-bottom: 1rem;">
+              <div>
+                <h4 style="margin: 0 0 0.5rem 0;">${apt.doctorName}</h4>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">${apt.department}</div>
+              </div>
+              <span class="badge ${utils.getStatusBadgeClass(apt.status)}">${apt.status}</span>
+            </div>
+            
+            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              ${utils.formatDate(apt.date)} at ${apt.time}
+            </div>
+            <div style="font-size: 0.875rem;">
+              <strong>Reason:</strong> ${apt.reason}
+            </div>
+
+            <button class="btn btn-sm btn-secondary w-full" style="margin-top: 1rem;" onclick="NotificationManager.show('Feature coming soon!', 'info')">
+              View Details
+            </button>
+          </div>
+        `).join('');
+            } else {
+                document.getElementById('pastAppointments').innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+            <h3>No Past Appointments</h3>
+            <p style="color: var(--text-secondary);">Your appointment history will appear here</p>
+          </div>
+        `;
+            }
+        }
+
+        function switchTab(tab) {
+            const upcomingTab = document.getElementById('upcomingTab');
+            const pastTab = document.getElementById('pastTab');
+            const upcomingContent = document.getElementById('upcomingAppointments');
+            const pastContent = document.getElementById('pastAppointments');
+
+            if (tab === 'upcoming') {
+                upcomingTab.classList.add('active');
+                upcomingTab.style.borderBottom = '3px solid var(--primary-blue)';
+                pastTab.classList.remove('active');
+                pastTab.style.borderBottom = 'none';
+                upcomingContent.classList.remove('hidden');
+                pastContent.classList.add('hidden');
+            } else {
+                pastTab.classList.add('active');
+                pastTab.style.borderBottom = '3px solid var(--primary-blue)';
+                upcomingTab.classList.remove('active');
+                upcomingTab.style.borderBottom = 'none';
+                pastContent.classList.remove('hidden');
+                upcomingContent.classList.add('hidden');
+            }
+        }
+
+        function loadDoctors() {
+            const dept = document.getElementById('department').value;
+            const doctorSelect = document.getElementById('doctor');
+
+            if (dept) {
+                const doctors = mockData.doctors.filter(d => d.department === dept);
+                doctorSelect.innerHTML = '<option value="">Select doctor</option>' +
+                    doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            } else {
+                doctorSelect.innerHTML = '<option value="">Select doctor</option>';
+            }
+        }
+
+        function bookAppointment() {
+            const form = document.getElementById('appointmentForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const doctorId = document.getElementById('doctor').value;
+            const doctor = mockData.doctors.find(d => d.id === doctorId);
+
+            const newAppointment = {
+                id: 'apt' + (mockData.appointments.length + 1),
+                patientId: currentUser.id,
+                patientName: currentUser.name,
+                doctorId: doctorId,
+                doctorName: doctor.name,
+                department: document.getElementById('department').value,
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                status: 'scheduled',
+                type: document.getElementById('appointmentType').value,
+                reason: document.getElementById('reason').value
+            };
+
+            mockData.appointments.push(newAppointment);
+            myAppointments = mockData.appointments.filter(apt => apt.patientId === currentUser.id);
+
+            renderAppointments();
+            NotificationManager.show('Appointment booked successfully!', 'success');
+            ModalManager.hide('bookAppointmentModal');
+            form.reset();
+        }
+
+        function cancelAppointment(id) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                const apt = mockData.appointments.find(a => a.id === id);
+                if (apt) {
+                    apt.status = 'cancelled';
+                    renderAppointments();
+                    NotificationManager.show('Appointment cancelled', 'info');
+                }
+            }
+        }
+
+        // Initial render
+        renderAppointments();
+    </script>
+</body>
+
+</html>

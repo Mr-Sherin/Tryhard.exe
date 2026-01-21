@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | MedFlowX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+    <link rel="stylesheet" href="styles/live-animations.css">
+    <link rel="stylesheet" href="styles/live-chat.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Admin Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Admin</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-doctors.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">👨‍⚕️</span>
+                    <span>Doctors</span>
+                </a>
+                <a href="admin-departments.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">🏢</span>
+                    <span>Departments</span>
+                </a>
+                <a href="admin-billing.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <span>Billing</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Banner -->
+            <div class="card"
+                style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; margin-bottom: 2rem; position: relative; overflow: hidden;">
+                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=1400"
+                    alt="Hospital"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.15;">
+                <div
+                    style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="color: white; margin-bottom: 0.5rem;">Dashboard Overview</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0;">Welcome back! Here's what's happening today.
+                        </p>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.9);">
+                        <span id="currentDate"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
+                <div class="card stat-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="stat-label">Total Patients</div>
+                            <div class="stat-value" id="totalPatients">1,234</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">+12% from last month</div>
+                        </div>
+                        <div class="stat-icon">🧑‍🤝‍🧑</div>
+                    </div>
+                </div>
+
+                <div class="card stat-card success">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="stat-label">Today's Appointments</div>
+                            <div class="stat-value" id="todayAppointments">24</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">8 completed</div>
+                        </div>
+                        <div class="stat-icon">📅</div>
+                    </div>
+                </div>
+
+                <div class="card stat-card warning">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="stat-label">Occupancy Rate</div>
+                            <div class="stat-value" id="occupancyRate">78%</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">65 of 83 beds</div>
+                        </div>
+                        <div class="stat-icon">🛏️</div>
+                    </div>
+                </div>
+
+                <div class="card stat-card info">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="stat-label">Monthly Revenue</div>
+                            <div class="stat-value" id="monthlyRevenue">$145K</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">+8% from last month</div>
+                        </div>
+                        <div class="stat-icon">💵</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-2" style="margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Patients Per Day</h3>
+                        <p class="card-subtitle">Weekly overview of patient visits</p>
+                    </div>
+                    <canvas id="patientsChart" width="400" height="250"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Department Statistics</h3>
+                        <p class="card-subtitle">Patients by department</p>
+                    </div>
+                    <canvas id="departmentChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Appointments & Quick Actions -->
+            <div class="grid grid-cols-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Appointments</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentAppointments">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 2rem;">
+                                        <div class="spinner"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-primary w-full" onclick="ModalManager.show('addDoctorModal')">
+                            <span>➕</span> Add New Doctor
+                        </button>
+                        <button class="btn btn-success w-full" onclick="ModalManager.show('addDepartmentModal')">
+                            <span>🏢</span> Add Department
+                        </button>
+                        <a href="admin-doctors.html" class="btn btn-secondary w-full">
+                            <span>👨‍⚕️</span> Manage Doctors
+                        </a>
+                        <a href="admin-billing.html" class="btn btn-secondary w-full">
+                            <span>💰</span> View Billing Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Doctor Modal -->
+    <div id="addDoctorModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Doctor</h3>
+                <button class="modal-close" onclick="ModalManager.hide('addDoctorModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addDoctorForm">
+                    <div class="form-group">
+                        <label class="form-label">Doctor Name</label>
+                        <input type="text" class="form-input" placeholder="Enter doctor name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select class="form-select" required>
+                            <option value="">Select department</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Specialization</label>
+                        <input type="text" class="form-input" placeholder="Enter specialization" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" placeholder="doctor@hospital.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" placeholder="+91 98765 43210" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('addDoctorModal')">Cancel</button>
+                <button class="btn btn-success" onclick="handleAddDoctor()">Add Doctor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Modal -->
+    <div id="addDepartmentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Department</h3>
+                <button class="modal-close" onclick="ModalManager.hide('addDepartmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addDepartmentForm">
+                    <div class="form-group">
+                        <label class="form-label">Department Name</label>
+                        <input type="text" class="form-input" placeholder="Enter department name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department Head</label>
+                        <input type="text" class="form-input" placeholder="Enter head of department" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Number of Rooms</label>
+                        <input type="number" class="form-input" placeholder="Enter number of rooms" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('addDepartmentModal')">Cancel</button>
+                <button class="btn btn-success" onclick="handleAddDepartment()">Add Department</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/live-updates.js"></script>
+    <script src="js/live-chat.js"></script>
+    <script>
+        // Check authentication
+        requireAuth('admin');
+        initCommonElements();
+
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Load analytics data
+        const analytics = mockData.analytics;
+        document.getElementById('totalPatients').textContent = analytics.totalPatients.toLocaleString();
+        document.getElementById('todayAppointments').textContent = analytics.todayAppointments;
+        document.getElementById('occupancyRate').textContent = analytics.occupancyRate + '%';
+        document.getElementById('monthlyRevenue').textContent = utils.formatCurrency(analytics.monthlyRevenue);
+
+        // Render charts
+        const patientsData = analytics.patientsPerDay;
+        ChartRenderer.renderBarChart(
+            'patientsChart',
+            patientsData.map(d => d.day),
+            patientsData.map(d => d.count),
+            '#0066CC'
+        );
+
+        const departmentData = analytics.departmentStats;
+        ChartRenderer.renderBarChart(
+            'departmentChart',
+            departmentData.map(d => d.department.substring(0, 6)),
+            departmentData.map(d => d.patients),
+            '#00A86B'
+        );
+
+        // Load recent appointments
+        const recentAppointments = mockData.appointments.slice(0, 5);
+        const tbody = document.getElementById('recentAppointments');
+        tbody.innerHTML = recentAppointments.map(apt => `
+      <tr>
+        <td>${apt.patientName}</td>
+        <td>${apt.doctorName}</td>
+        <td>${apt.time}</td>
+        <td><span class="badge ${utils.getStatusBadgeClass(apt.type)}">${apt.type}</span></td>
+      </tr>
+    `).join('');
+
+        // Handle add doctor
+        function handleAddDoctor() {
+            NotificationManager.show('Doctor added successfully!', 'success');
+            ModalManager.hide('addDoctorModal');
+            document.getElementById('addDoctorForm').reset();
+        }
+
+        // Handle add department
+        function handleAddDepartment() {
+            NotificationManager.show('Department added successfully!', 'success');
+            ModalManager.hide('addDepartmentModal');
+            document.getElementById('addDepartmentForm').reset();
+        }
+    </script>
+</body>
+
+</html>

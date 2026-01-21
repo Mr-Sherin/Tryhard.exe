@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical Records | Patient Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <div class="navbar-brand">
+          <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+          <span>MedFlowX</span>
+        </div>
+        <div class="flex items-center gap-lg">
+          <div style="text-align: right;">
+            <div id="userName" style="font-weight: 600;">Patient Name</div>
+            <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Patient</div>
+          </div>
+          <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <a href="patient-dashboard.html" class="sidebar-item">
+          <span style="font-size: 1.5rem;">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="patient-appointments.html" class="sidebar-item">
+          <span style="font-size: 1.5rem;">📅</span>
+          <span>Appointments</span>
+        </a>
+        <a href="patient-records.html" class="sidebar-item active">
+          <span style="font-size: 1.5rem;">📋</span>
+          <span>Medical Records</span>
+        </a>
+        <a href="patient-billing.html" class="sidebar-item">
+          <span style="font-size: 1.5rem;">💰</span>
+          <span>Billing</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="flex justify-between items-center" style="margin-bottom: 2rem;">
+        <div>
+          <h1>Medical Records</h1>
+          <p style="color: var(--text-secondary); margin: 0;">View your medical history and prescriptions</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="margin-bottom: 2rem; border-bottom: 2px solid var(--border);">
+        <div class="flex gap-md">
+          <button id="prescriptionsTab" class="nav-link active"
+            style="border-bottom: 3px solid var(--primary-blue); margin-bottom: -2px;"
+            onclick="switchTab('prescriptions')">
+            Prescriptions
+          </button>
+          <button id="recordsTab" class="nav-link" onclick="switchTab('records')">
+            Medical History
+          </button>
+        </div>
+      </div>
+
+      <!-- Prescriptions -->
+      <div id="prescriptionsContent">
+        <div class="grid grid-cols-2" id="prescriptionsList">
+        </div>
+      </div>
+
+      <!-- Medical Records -->
+      <div id="recordsContent" class="hidden">
+        <div id="medicalRecordsList">
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    requireAuth('patient');
+    initCommonElements();
+
+    const currentUser = auth.getUser();
+    const myPrescriptions = mockData.prescriptions.filter(presc => presc.patientId === currentUser.id);
+    const myRecords = mockData.medicalRecords.filter(rec => rec.patientId === currentUser.id);
+
+    function renderPrescriptions() {
+      if (myPrescriptions.length > 0) {
+        document.getElementById('prescriptionsList').innerHTML = myPrescriptions.map(presc => `
+          <div class="card">
+            <div class="flex justify-between items-start" style="margin-bottom: 1rem;">
+              <div>
+                <h4 style="margin: 0 0 0.5rem 0;">${presc.medication}</h4>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                  Prescribed by ${presc.doctorName}
+                </div>
+              </div>
+              <span class="badge badge-success">Active</span>
+            </div>
+
+            <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+              <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                <strong>Dosage:</strong> ${presc.dosage}
+              </div>
+              <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                <strong>Duration:</strong> ${presc.duration}
+              </div>
+              <div style="font-size: 0.875rem;">
+                <strong>Refills:</strong> ${presc.refills} remaining
+              </div>
+            </div>
+
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Issued on ${utils.formatDate(presc.date)}
+            </div>
+
+            <div class="flex gap-sm">
+              <button class="btn btn-sm btn-primary" onclick="downloadPrescription('${presc.id}')">
+                📄 Download
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="NotificationManager.show('Refill request sent!', 'success')">
+                🔄 Request Refill
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('prescriptionsList').innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💊</div>
+            <h3>No Active Prescriptions</h3>
+            <p style="color: var(--text-secondary);">Your prescriptions will appear here</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderMedicalRecords() {
+      if (myRecords.length > 0) {
+        document.getElementById('medicalRecordsList').innerHTML = myRecords.map(record => `
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="flex justify-between items-start" style="margin-bottom: 1rem;">
+              <div>
+                <h4 style="margin: 0;">${utils.formatDate(record.date)}</h4>
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
+                  Consultation with ${record.doctorName}
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <div style="background: linear-gradient(135deg, rgba(0, 102, 204, 0.1) 0%, rgba(0, 102, 204, 0.05) 100%); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--primary-blue); margin-bottom: 1rem;">
+                <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary-blue); margin-bottom: 0.5rem;">
+                  Diagnosis
+                </div>
+                <div style="font-size: 0.875rem;">
+                  ${record.diagnosis}
+                </div>
+              </div>
+
+              <div style="background: linear-gradient(135deg, rgba(0, 168, 107, 0.1) 0%, rgba(0, 168, 107, 0.05) 100%); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--secondary-green); margin-bottom: 1rem;">
+                <div style="font-size: 0.875rem; font-weight: 600; color: var(--secondary-green); margin-bottom: 0.5rem;">
+                  Prescription
+                </div>
+                <div style="font-size: 0.875rem;">
+                  ${record.prescription}
+                </div>
+              </div>
+
+              ${record.notes ? `
+                <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                  <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    Treatment Notes
+                  </div>
+                  <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                    ${record.notes}
+                  </div>
+                </div>
+              ` : ''}
+
+              ${record.nextVisit ? `
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                  <strong>Next Visit:</strong> ${utils.formatDate(record.nextVisit)}
+                </div>
+              ` : ''}
+            </div>
+
+            <button class="btn btn-sm btn-secondary" onclick="downloadRecord('${record.id}')">
+              📄 Download Report
+            </button>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('medicalRecordsList').innerHTML = `
+          <div class="card" style="text-align: center; padding: 3rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+            <h3>No Medical Records</h3>
+            <p style="color: var(--text-secondary);">Your medical history will appear here after consultations</p>
+          </div>
+        `;
+      }
+    }
+
+    function switchTab(tab) {
+      const prescriptionsTab = document.getElementById('prescriptionsTab');
+      const recordsTab = document.getElementById('recordsTab');
+      const prescriptionsContent = document.getElementById('prescriptionsContent');
+      const recordsContent = document.getElementById('recordsContent');
+
+      if (tab === 'prescriptions') {
+        prescriptionsTab.classList.add('active');
+        prescriptionsTab.style.borderBottom = '3px solid var(--primary-blue)';
+        recordsTab.classList.remove('active');
+        recordsTab.style.borderBottom = 'none';
+        prescriptionsContent.classList.remove('hidden');
+        recordsContent.classList.add('hidden');
+      } else {
+        recordsTab.classList.add('active');
+        recordsTab.style.borderBottom = '3px solid var(--primary-blue)';
+        prescriptionsTab.classList.remove('active');
+        prescriptionsTab.style.borderBottom = 'none';
+        recordsContent.classList.remove('hidden');
+        prescriptionsContent.classList.add('hidden');
+      }
+    }
+
+    function downloadPrescription(id) {
+      NotificationManager.show('Prescription downloaded successfully!', 'success');
+    }
+
+    function downloadRecord(id) {
+      NotificationManager.show('Medical record downloaded successfully!', 'success');
+    }
+
+    // Initial render
+    renderPrescriptions();
+    renderMedicalRecords();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments | Doctor Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Doctor Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Doctor</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="doctor-dashboard.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="doctor-appointments.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="doctor-patients.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">🧑</span>
+                    <span>Patients</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="flex justify-between items-center" style="margin-bottom: 2rem;">
+                <div>
+                    <h1>Appointments</h1>
+                    <p style="color: var(--text-secondary); margin: 0;">Manage your appointment schedule</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="grid grid-cols-3">
+                    <div>
+                        <label class="form-label">Date</label>
+                        <select id="dateFilter" class="form-select" onchange="filterAppointments()">
+                            <option value="today">Today</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="week">This Week</option>
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Type</label>
+                        <select id="typeFilter" class="form-select" onchange="filterAppointments()">
+                            <option value="all">All Types</option>
+                            <option value="regular">Regular</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select" onchange="filterAppointments()">
+                            <option value="all">All Status</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Appointment Schedule</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Patient</th>
+                                <th>Type</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Appointment Detail Modal -->
+    <div id="appointmentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Appointment Details</h3>
+                <button class="modal-close" onclick="ModalManager.hide('appointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="appointmentDetails">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('appointmentModal')">Close</button>
+                <button class="btn btn-success" id="completeBtn" onclick="completeAppointment()">Mark Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth('doctor');
+        initCommonElements();
+
+        let appointments = mockData.appointments.filter(apt => apt.doctorId === 'doc1');
+        let filteredAppointments = [...appointments];
+        let selectedAppointment = null;
+
+        function renderAppointments() {
+            const tbody = document.getElementById('appointmentsTable');
+            tbody.innerHTML = filteredAppointments.map(apt => `
+        <tr onclick="viewAppointment('${apt.id}')" style="cursor: pointer;">
+          <td>
+            <div><strong>${utils.formatDate(apt.date)}</strong></div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">${apt.time}</div>
+          </td>
+          <td><strong>${apt.patientName}</strong></td>
+          <td><span class="badge ${utils.getStatusBadgeClass(apt.type)}">${apt.type}</span></td>
+          <td>${apt.reason}</td>
+          <td><span class="badge ${utils.getStatusBadgeClass(apt.status)}">${apt.status}</span></td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); viewAppointment('${apt.id}')">
+              View
+            </button>
+            ${apt.status === 'scheduled' ?
+                    `<button class="btn btn-sm btn-success" onclick="event.stopPropagation(); completeAppointment('${apt.id}')">
+                Complete
+              </button>` : ''
+                }
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function filterAppointments() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredAppointments = appointments.filter(apt => {
+                const matchesType = typeFilter === 'all' || apt.type === typeFilter;
+                const matchesStatus = statusFilter === 'all' || apt.status === statusFilter;
+                // Date filtering logic simplified for demo
+                const matchesDate = dateFilter === 'all' || apt.date === '2026-01-21';
+
+                return matchesType && matchesStatus && matchesDate;
+            });
+
+            renderAppointments();
+        }
+
+        function viewAppointment(id) {
+            const apt = appointments.find(a => a.id === id);
+            if (apt) {
+                selectedAppointment = apt;
+                const patient = mockData.patients.find(p => p.name === apt.patientName);
+
+                document.getElementById('appointmentDetails').innerHTML = `
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 1rem; color: var(--primary-blue);">Appointment Information</h4>
+            <div class="grid grid-cols-2" style="gap: 1rem;">
+              <div>
+                <strong>Patient:</strong><br>
+                <span>${apt.patientName}</span>
+              </div>
+              <div>
+                <strong>Date & Time:</strong><br>
+                <span>${utils.formatDate(apt.date)} at ${apt.time}</span>
+              </div>
+              <div>
+                <strong>Type:</strong><br>
+                <span class="badge ${utils.getStatusBadgeClass(apt.type)}">${apt.type}</span>
+              </div>
+              <div>
+                <strong>Status:</strong><br>
+                <span class="badge ${utils.getStatusBadgeClass(apt.status)}">${apt.status}</span>
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <strong>Reason for Visit:</strong><br>
+                <span>${apt.reason}</span>
+              </div>
+            </div>
+          </div>
+          
+          ${patient ? `
+            <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md);">
+              <h4 style="margin-bottom: 1rem;">Patient Details</h4>
+              <div class="grid grid-cols-2" style="gap: 0.5rem; font-size: 0.875rem;">
+                <div><strong>Age:</strong> ${patient.age} years</div>
+                <div><strong>Gender:</strong> ${patient.gender}</div>
+                <div><strong>Blood Group:</strong> ${patient.bloodGroup}</div>
+                <div><strong>Phone:</strong> ${patient.phone}</div>
+                <div style="grid-column: 1 / -1;"><strong>Current Condition:</strong> ${patient.condition}</div>
+              </div>
+            </div>
+          ` : ''}
+        `;
+
+                const completeBtn = document.getElementById('completeBtn');
+                if (apt.status !== 'scheduled') {
+                    completeBtn.style.display = 'none';
+                } else {
+                    completeBtn.style.display = 'inline-flex';
+                }
+
+                ModalManager.show('appointmentModal');
+            }
+        }
+
+        function completeAppointment(id) {
+            if (id) {
+                selectedAppointment = appointments.find(a => a.id === id);
+            }
+
+            if (selectedAppointment) {
+                selectedAppointment.status = 'completed';
+                NotificationManager.show('Appointment marked as completed', 'success');
+                ModalManager.hide('appointmentModal');
+                filterAppointments();
+            }
+        }
+
+        // Initial render
+        renderAppointments();
+    </script>
+</body>
+
+</html>

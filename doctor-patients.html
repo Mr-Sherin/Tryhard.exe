@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients | Doctor Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Doctor Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Doctor</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="doctor-dashboard.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="doctor-appointments.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="doctor-patients.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">🧑</span>
+                    <span>Patients</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="flex justify-between items-center" style="margin-bottom: 2rem;">
+                <div>
+                    <h1>Patient Records</h1>
+                    <p style="color: var(--text-secondary); margin: 0;">View and manage patient medical records</p>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="grid grid-cols-3">
+                    <div style="grid-column: 1 / 3;">
+                        <label class="form-label">Search Patients</label>
+                        <input type="text" id="searchInput" class="form-input"
+                            placeholder="Search by name, ID, or condition..." oninput="filterPatients()">
+                    </div>
+                    <div>
+                        <label class="form-label">Filter by Condition</label>
+                        <select id="conditionFilter" class="form-select" onchange="filterPatients()">
+                            <option value="all">All Conditions</option>
+                            <option value="Hypertension">Hypertension</option>
+                            <option value="Diabetes">Diabetes</option>
+                            <option value="Cardiac">Cardiac Issues</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patients List -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">All Patients</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Age</th>
+                                <th>Blood Group</th>
+                                <th>Condition</th>
+                                <th>Last Visit</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Patient Medical Record Modal -->
+    <div id="medicalRecordModal" class="modal-overlay hidden">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Medical Record</h3>
+                <button class="modal-close" onclick="ModalManager.hide('medicalRecordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="patientInfo" style="margin-bottom: 1.5rem;"></div>
+
+                <!-- Medical History -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                        Medical History
+                    </h4>
+                    <div id="medicalHistory"></div>
+                </div>
+
+                <!-- Add New Record Form -->
+                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h4 style="margin-bottom: 1rem;">Add New Record</h4>
+                    <form id="newRecordForm">
+                        <div class="form-group">
+                            <label class="form-label">Diagnosis *</label>
+                            <input type="text" id="diagnosis" class="form-input" placeholder="Enter diagnosis" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Prescription *</label>
+                            <textarea id="prescription" class="form-textarea" placeholder="Enter medication and dosage"
+                                required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Treatment Notes</label>
+                            <textarea id="notes" class="form-textarea"
+                                placeholder="Enter treatment notes and recommendations"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2">
+                            <div class="form-group">
+                                <label class="form-label">Next Visit Date</label>
+                                <input type="date" id="nextVisit" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Priority</label>
+                                <select id="priority" class="form-select">
+                                    <option value="routine">Routine</option>
+                                    <option value="followup">Follow-up</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="ModalManager.hide('medicalRecordModal')">Cancel</button>
+                <button class="btn btn-success" onclick="saveMedicalRecord()">Save Record</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        requireAuth('doctor');
+        initCommonElements();
+
+        let patients = [...mockData.patients];
+        let filteredPatients = [...patients];
+        let selectedPatient = null;
+
+        function renderPatients() {
+            const tbody = document.getElementById('patientsTable');
+            tbody.innerHTML = filteredPatients.map(patient => `
+        <tr style="cursor: pointer;" onclick="viewMedicalRecord('${patient.id}')">
+          <td>
+            <div class="flex items-center gap-md">
+              <img src="${patient.image || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100'}" alt="${patient.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+              <strong>${patient.name}</strong>
+            </div>
+          </td>
+          <td>${patient.age} years</td>
+          <td>${patient.bloodGroup}</td>
+          <td>${patient.condition}</td>
+          <td>${utils.formatDate(patient.lastVisit)}</td>
+          <td>${patient.phone}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); viewMedicalRecord('${patient.id}')">
+              View Record
+            </button>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function filterPatients() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const conditionFilter = document.getElementById('conditionFilter').value;
+
+            filteredPatients = patients.filter(patient => {
+                const matchesSearch = patient.name.toLowerCase().includes(searchTerm) ||
+                    patient.condition.toLowerCase().includes(searchTerm);
+                const matchesCondition = conditionFilter === 'all' ||
+                    patient.condition.includes(conditionFilter);
+
+                return matchesSearch && matchesCondition;
+            });
+
+            renderPatients();
+        }
+
+        function viewMedicalRecord(patientId) {
+            const patient = patients.find(p => p.id === patientId);
+            if (patient) {
+                selectedPatient = patient;
+
+                // Display patient info
+                document.getElementById('patientInfo').innerHTML = `
+          <div class="card" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%); color: white;">
+            <div class="grid grid-cols-2" style="gap: 1rem;">
+              <div>
+                <h3 style="color: white; margin-bottom: 1rem;">${patient.name}</h3>
+                <div style="font-size: 0.875rem; opacity: 0.9;">
+                  <div><strong>Age:</strong> ${patient.age} years</div>
+                  <div><strong>Gender:</strong> ${patient.gender}</div>
+                  <div><strong>Blood Group:</strong> ${patient.bloodGroup}</div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size: 0.875rem; opacity: 0.9;">
+                  <div><strong>Phone:</strong> ${patient.phone}</div>
+                  <div><strong>Email:</strong> ${patient.email}</div>
+                  <div><strong>Current Condition:</strong> ${patient.condition}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+                // Display medical history
+                const records = mockData.medicalRecords.filter(r => r.patientId === patientId);
+                if (records.length > 0) {
+                    document.getElementById('medicalHistory').innerHTML = records.map(record => `
+            <div class="card" style="margin-bottom: 1rem; background: var(--gray-50);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <strong>${utils.formatDate(record.date)}</strong>
+                <span style="color: var(--text-secondary);">Dr. ${record.doctorName}</span>
+              </div>
+              <div style="font-size: 0.875rem;">
+                <div style="margin-bottom: 0.5rem;">
+                  <strong style="color: var(--primary-blue);">Diagnosis:</strong> ${record.diagnosis}
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <strong style="color: var(--secondary-green);">Prescription:</strong> ${record.prescription}
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                  <strong>Notes:</strong> ${record.notes}
+                </div>
+                ${record.nextVisit ? `
+                  <div style="color: var(--text-secondary);">
+                    <strong>Next Visit:</strong> ${utils.formatDate(record.nextVisit)}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('');
+                } else {
+                    document.getElementById('medicalHistory').innerHTML = `
+            <div class="alert alert-info">No previous medical records found.</div>
+          `;
+                }
+
+                ModalManager.show('medicalRecordModal');
+            }
+        }
+
+        function saveMedicalRecord() {
+            const diagnosis = document.getElementById('diagnosis').value;
+            const prescription = document.getElementById('prescription').value;
+            const notes = document.getElementById('notes').value;
+            const nextVisit = document.getElementById('nextVisit').value;
+
+            if (!diagnosis || !prescription) {
+                NotificationManager.show('Please fill in diagnosis and prescription', 'warning');
+                return;
+            }
+
+            // Save record (in real app, would save to backend)
+            const newRecord = {
+                id: 'rec' + (mockData.medicalRecords.length + 1),
+                patientId: selectedPatient.id,
+                patientName: selectedPatient.name,
+                date: new Date().toISOString().split('T')[0],
+                doctorName: auth.getUser().name,
+                diagnosis: diagnosis,
+                prescription: prescription,
+                notes: notes,
+                nextVisit: nextVisit
+            };
+
+            mockData.medicalRecords.push(newRecord);
+
+            NotificationManager.show('Medical record saved successfully!', 'success');
+            ModalManager.hide('medicalRecordModal');
+            document.getElementById('newRecordForm').reset();
+        }
+
+        // Initial render
+        renderPatients();
+    </script>
+</body>
+
+</html>

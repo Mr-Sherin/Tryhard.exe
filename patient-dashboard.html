@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard | MedFlowX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interactive.css">
+    <link rel="stylesheet" href="styles/live-animations.css">
+    <link rel="stylesheet" href="styles/live-chat.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <img src="images/logo.png" alt="MedFlowX" style="height: 40px; width: auto;">
+                    <span>MedFlowX</span>
+                </div>
+                <div class="flex items-center gap-lg">
+                    <div style="text-align: right;">
+                        <div id="userName" style="font-weight: 600;">Patient Name</div>
+                        <div id="userRole" style="font-size: 0.875rem; color: var(--text-secondary);">Patient</div>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="patient-dashboard.html" class="sidebar-item active">
+                    <span style="font-size: 1.5rem;">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="patient-appointments.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="patient-records.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">📋</span>
+                    <span>Medical Records</span>
+                </a>
+                <a href="patient-billing.html" class="sidebar-item">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <span>Billing</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <!-- Welcome Banner -->
+            <div class="card"
+                style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; margin-bottom: 2rem; position: relative; overflow: hidden;">
+                <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1200"
+                    alt="Healthcare"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.2;">
+                <div
+                    style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="color: white; margin-bottom: 0.5rem;">Welcome back, John!</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0;">Here's your health overview</p>
+                    </div>
+                    <button class="btn btn-lg" style="background: white; color: var(--primary-blue);"
+                        onclick="window.location.href='patient-appointments.html'">
+                        📅 Book Appointment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-4" style="margin-bottom: 2rem;">
+                <div class="card stat-card">
+                    <div style="color: var(--white); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0.9;">Upcoming
+                        Appointments</div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: white;" id="upcomingCount">2
+                    </div>
+                </div>
+                <div class="card stat-card success">
+                    <div style="color: var(--white); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0.9;">Medical
+                        Records</div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: white;" id="medicalRecordsCount">5</div>
+                </div>
+                <div class="card stat-card info">
+                    <div style="color: var(--white); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0.9;">Active
+                        Prescriptions</div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: white;" id="activePrescriptions">2</div>
+                </div>
+                <div class="card stat-card warning">
+                    <div style="color: var(--white); font-size: 0.875rem; margin-bottom: 0.5rem; opacity: 0.9;">Pending
+                        Bills
+                    </div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: white;" id="pendingBills">$0</div>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments & Recent Prescriptions -->
+            <div class="grid grid-cols-2" style="margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Upcoming Appointments</h3>
+                    </div>
+                    <div id="upcomingAppointments">
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            Loading appointments...
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <a href="patient-appointments.html" class="btn btn-secondary w-full">View All Appointments</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Prescriptions</h3>
+                    </div>
+                    <div id="recentPrescriptions">
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            Loading prescriptions...
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <a href="patient-records.html" class="btn btn-secondary w-full">View Medical Records</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Reminders -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Health Reminders</h3>
+                </div>
+                <div class="flex flex-col gap-md">
+                    <div class="alert alert-info">
+                        <div>
+                            <strong>Medication Reminder</strong>
+                            <p style="margin: 0.5rem 0 0 0;">Take Lisinopril 10mg - Morning dose</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning">
+                        <div>
+                            <strong>Appointment Reminder</strong>
+                            <p style="margin: 0.5rem 0 0 0;">You have an appointment tomorrow at 10:00 AM with Dr.
+                                Michael Chen</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/live-updates.js"></script>
+    <script src="js/live-chat.js"></script>
+    <script>
+        requireAuth('patient');
+        initCommonElements();
+
+        const currentUser = auth.getUser();
+
+        // Load upcoming appointments
+        const myAppointments = mockData.appointments.filter(apt =>
+            apt.patientId === currentUser.id && apt.status === 'scheduled'
+        );
+
+        document.getElementById('upcomingCount').textContent = myAppointments.length;
+
+        if (myAppointments.length > 0) {
+            document.getElementById('upcomingAppointments').innerHTML = myAppointments.map(apt => `
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border); last:border-bottom: none;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+            <div>
+              <div style="font-weight: 600;">${apt.doctorName}</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">${apt.department}</div>
+            </div>
+            <span class="badge ${utils.getStatusBadgeClass(apt.type)}">${apt.type}</span>
+          </div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            📅 ${utils.formatDate(apt.date)} at ${apt.time}
+          </div>
+          <div style="font-size: 0.875rem; margin-top: 0.5rem;">
+            <strong>Reason:</strong> ${apt.reason}
+          </div>
+        </div>
+      `).join('');
+        } else {
+            document.getElementById('upcomingAppointments').innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          No upcoming appointments. <a href="patient-appointments.html">Book one now</a>
+        </div>
+      `;
+        }
+
+        // Load recent prescriptions
+        const myPrescriptions = mockData.prescriptions.filter(presc =>
+            presc.patientId === currentUser.id
+        ).slice(0, 3);
+
+        if (myPrescriptions.length > 0) {
+            document.getElementById('recentPrescriptions').innerHTML = myPrescriptions.map(presc => `
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+          <div style="font-weight: 600; margin-bottom: 0.5rem;">${presc.medication}</div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+            <strong>Dosage:</strong> ${presc.dosage}
+          </div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+            <strong>Duration:</strong> ${presc.duration}
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+            Prescribed by ${presc.doctorName} on ${utils.formatDate(presc.date)}
+          </div>
+        </div>
+      `).join('');
+        } else {
+            document.getElementById('recentPrescriptions').innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          No active prescriptions
+        </div>
+      `;
+        }
+
+        // Load pending bills
+        const myBills = mockData.billing.filter(bill =>
+            bill.patientId === currentUser.id && bill.status !== 'paid'
+        );
+
+        const pendingAmount = myBills.reduce((sum, bill) => sum + (bill.amount - bill.paid), 0);
+        document.getElementById('pendingBills').textContent = utils.formatCurrency(pendingAmount);
+    </script>
+</body>
+
+</html>
